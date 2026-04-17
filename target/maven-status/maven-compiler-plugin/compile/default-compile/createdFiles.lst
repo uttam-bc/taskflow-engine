@@ -1,0 +1,7 @@
+com\gengar\taskflow\repository\TaskRepository.class
+com\gengar\taskflow\dto\TaskCreateDto.class
+com\gengar\taskflow\exception\GlobalExceptionHandler.class
+com\gengar\taskflow\controller\TaskController.class
+com\gengar\taskflow\dto\TaskResponseDto.class
+com\gengar\taskflow\model\Task.class
+com\gengar\taskflow\TaskFlowApplication.class

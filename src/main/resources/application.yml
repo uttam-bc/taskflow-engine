@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: taskflow-engine
+  profiles:
+    active: dev
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+
+server:
+  port: 8080
+  shutdown: graceful # Forces Tomcat to stop accepting requests and allow existing ones to complete
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/taskflow_dev
+      auto-index-creation: true # DEV ONLY: Allows Spring Data to parse @Indexed annotations internally and create them on startup
+
+logging:
+  level:
+    root: INFO
+    com.gengar.taskflow: DEBUG
+    org.springframework.data.mongodb.core.MongoTemplate: DEBUG # Observe Mongo parsing behavior
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  data:
+    mongodb:
+      uri: ${MONGO_URI}
+      auto-index-creation: false # PREVENT AUTO MAGIC in Prod. Require explicit DB migrations.
+
+logging:
+  pattern:
+    console: '{"timestamp":"%d{yyyy-MM-dd''T''HH:mm:ss.SSSZ}","level":"%level","thread":"%thread","logger":"%logger","message":"%msg","context":"%mdc"}%n'
