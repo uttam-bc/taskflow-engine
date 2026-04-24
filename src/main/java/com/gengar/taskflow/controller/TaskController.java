@@ -3,7 +3,7 @@ package com.gengar.taskflow.controller;
 import com.gengar.taskflow.dto.TaskCreateDto;
 import com.gengar.taskflow.dto.TaskResponseDto;
 import com.gengar.taskflow.model.Task;
-import com.gengar.taskflow.repository.TaskRepository;
+import com.gengar.taskflow.service.TaskService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,35 +25,31 @@ import java.util.List;
 @RequestMapping("/api/v1/tasks")
 public class TaskController {
 
-    private final TaskRepository taskRepository;
+    private final TaskService taskService;
 
     // Strict constructor injection. No internal Spring proxy magic like @Autowired on fields permitted here.
     // Throws a clear exception if dependency tree fails on startup.
-    public TaskController(TaskRepository taskRepository) {
-        this.taskRepository = taskRepository;
+    public TaskController(TaskService taskService) {
+        this.taskService = taskService;
     }
 
     @PostMapping
     public ResponseEntity<TaskResponseDto> createTask(@Valid @RequestBody TaskCreateDto createDto) {
-        // Phase 1 Explicit mapping - bypassing mapstruct or ModelMapper for clear visibility
-        Task task = new Task(
-                createDto.getTitle(),
-                createDto.getDescription(),
-                "PENDING", // Default status
-                Instant.now(), // Manual auditing lifecycle
-                Instant.now()
-        );
-
-        Task savedTask = taskRepository.save(task);
-
+        Task savedTask = taskService.createTask(createDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(new TaskResponseDto(savedTask));
     }
 
     @GetMapping
     public ResponseEntity<List<TaskResponseDto>> getTasks() {
-        List<TaskResponseDto> tasks = taskRepository.findAll().stream()
+        List<TaskResponseDto> tasks = taskService.getAllTasks().stream()
                 .map(TaskResponseDto::new)
                 .toList();
         return ResponseEntity.ok(tasks);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<TaskResponseDto> getTaskById(@PathVariable String id) {
+        Task task = taskService.getTaskById(id);
+        return ResponseEntity.ok(new TaskResponseDto(task));
     }
 }
